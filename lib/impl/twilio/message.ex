@@ -61,7 +61,8 @@ defmodule TextClient.Impl.Twilio.Message do
     new_request()
     |> put_method(:post)
     |> put_endpoint(@endpoint <> conversation_sid <> "/Messages")
-    |> put_body(params)
+    |> put_header("Content-Type": "application/x-www-form-urlencoded")
+    |> put_body(params, uri_encoded: true)
     |> make_request
     |> format_create_response
   end
@@ -107,7 +108,8 @@ defmodule TextClient.Impl.Twilio.Message do
     new_request()
     |> put_method(:post)
     |> put_endpoint(@endpoint <> conversation_sid <> "/Messages/" <> message_sid)
-    |> put_body(params)
+    |> put_header("Content-Type": "application/x-www-form-urlencoded")
+    |> put_body(params, uri_encoded: true)
     |> make_request()
     |> format_update_response
   end

@@ -45,7 +45,7 @@ defmodule TextClient.Impl.Twilio.Participant do
   when params:
   %{
     optional(:Identity) => String.t,
-    optional(:Address) => String.t,
+    optional(:Address) => String.t, # MUST BE IN INTL FORMAT
     optional(:ProxyAddress) => String.t,
     optional(:Attributes) => map
   }
@@ -53,14 +53,16 @@ defmodule TextClient.Impl.Twilio.Participant do
     new_request()
     |> put_method(:post)
     |> put_endpoint(@endpoint <> conversation_sid <> "/Participants")
-    |> put_body(format_create_params(params))
+    |> put_header("Content-Type": "application/x-www-form-urlencoded")
+    |> put_body(format_create_params(params), uri_encoded: true)
+    |> IO.inspect
     |> make_request
+    |> IO.inspect
     |> format_create_response
   end
 
   defp format_create_params(raw_params) do
     %{
-      "Identity" => raw_params[:Identity],
       "MessagingBinding.Address" => raw_params[:Address],
       "MessagingBinding.ProxyAddress" => raw_params[:ProxyAddress] || twilio_sms_number(),
       "Attributes" => raw_params[:Attributes]
@@ -111,7 +113,8 @@ defmodule TextClient.Impl.Twilio.Participant do
     new_request()
     |> put_method(:post)
     |> put_endpoint(@endpoint <> conversation_sid <> "/Participants/" <> participant_sid)
-    |> put_body(format_create_params(params))
+    |> put_header("Content-Type": "application/x-www-form-urlencoded")
+    |> put_body(format_create_params(params), uri_encoded: true)
     |> make_request()
     |> format_update_response
   end

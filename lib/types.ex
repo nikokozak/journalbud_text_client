@@ -8,35 +8,6 @@ defmodule TextClient.Types do
   :http_empty | :http_access_key_incorrect | :http_not_found | :http_method_not_allowed | :http_timeout |
   :http_not_created | :http_server_error
 
-  @type contact_req :: %{
-    msisdn: String.t, # Phone number of contact
-    firstName: String.t, # Optional
-    lastName: String.t, # Optional
-    custom1: String.t # Email of contact
-  }
-
-  @type contact_res :: %{
-    id: String.t,
-    href: String.t,
-    msisdn: String.t,
-    firstName: String.t,
-    lastName: String.t,
-    customDetails: %{
-      custom1: String.t,
-      custom2: String.t,
-      custom3: String.t,
-      custom4: String.t
-    },
-    groups: %{
-      totalCount: integer,
-      href: String.t
-    },
-    messages: %{
-      totalCount: integer,
-      href: String.t
-    }
-  }
-
   ########################################
 
   @spec code_to_message(http_code | api_code) :: String.t

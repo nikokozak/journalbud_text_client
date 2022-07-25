@@ -62,7 +62,6 @@ defmodule TextClient.Impl.Twilio.Conversation do
     |> put_endpoint(@endpoint)
     |> put_header("Content-Type": "application/x-www-form-urlencoded")
     |> put_body(params, uri_encoded: true)
-    |> IO.inspect
     |> make_request
     |> format_create_response
   end
@@ -84,7 +83,7 @@ defmodule TextClient.Impl.Twilio.Conversation do
 
   ########################################
 
-  @spec all(opts) :: {:ok, [t] | nil} | {:error, Error.t}
+  @spec all(opts) :: {:ok, [t] | []} | {:error, Error.t}
   when opts:
   %{ PageSize: integer }
   def all(opts \\ %{}) do
@@ -110,7 +109,8 @@ defmodule TextClient.Impl.Twilio.Conversation do
     new_request()
     |> put_method(:post)
     |> put_endpoint(@endpoint <> sid)
-    |> put_body(params)
+    |> put_header("Content-Type": "application/x-www-form-urlencoded")
+    |> put_body(params, uri_encoded: true)
     |> make_request()
     |> format_update_response
   end
