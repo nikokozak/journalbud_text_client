@@ -76,7 +76,8 @@ defmodule TextClient.Impl.Conversation do
     new_request()
     |> put_method(:post)
     |> put_endpoint(@endpoint <> "start")
-    |> put_body(params)
+    |> put_body(Map.put(params, :channelId, sms_channel()))
+    |> IO.inspect()
     |> make_request
     |> format_create_response
   end
@@ -200,5 +201,7 @@ defmodule TextClient.Impl.Conversation do
     {:error, Error.new(unexpected_status_code, body) }
   end
   defp format_response({:error, %Error{}} = error, _method), do: {:error, error}
+
+  defp sms_channel, do: Application.fetch_env!(:text_client, :sms_channel)
 
 end

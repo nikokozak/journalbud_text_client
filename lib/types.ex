@@ -1,7 +1,12 @@
 defmodule TextClient.Types do
 
-  @type http_codes :: 200 | 201 | 204 | 401 | 404 | 405 | 408 | 422 | 500
-  @type api_codes :: 2   | 9   | 10  | 20  | 21  | 25  | 98  | 99  | 100 | 101 | 102
+  @type http_code :: 200 | 201 | 204 | 401 | 404 | 405 | 408 | 422 | 500
+  @type api_code :: 2 | 9 | 10 | 20 | 21 | 25 | 98 | 99 | 100 | 101 | 102
+  @type descriptor :: :api_request_not_allowed | :api_missing_parameters | :api_invalid_parameters |
+  :api_not_found | :api_bad_request | :api_not_enough_balance | :api_not_found | :api_internal_error |
+  :api_service_unavailable | :api_duplicate_entry | :api_ambiguous_lookup | :http_found | :http_created |
+  :http_empty | :http_access_key_incorrect | :http_not_found | :http_method_not_allowed | :http_timeout |
+  :http_not_created | :http_server_error
 
   @type contact_req :: %{
     msisdn: String.t, # Phone number of contact
@@ -32,19 +37,25 @@ defmodule TextClient.Types do
     }
   }
 
+  ########################################
 
+  @spec code_to_message(http_code | api_code) :: String.t
   def code_to_message(code) do
     {message, _code} = rosetta(code)
 
     message
   end
 
+  @spec code_to_descriptor(http_code | api_code) :: descriptor
   def code_to_descriptor(code) do
     {_message, descriptor} = rosetta(code)
 
     descriptor
   end
 
+  ########################################
+
+  @spec rosetta(http_code | api_code) :: {String.t, atom}
   defp rosetta(code) when is_integer(code) do
     %{
       2   => {"Request not allowed", :api_request_not_allowed},

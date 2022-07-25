@@ -1,5 +1,6 @@
 defmodule TextClient.Impl.Contact do
   import TextClient.Impl.HTTPClient.Request
+  alias TextClient.Impl.HTTPClient.Response
   alias TextClient.Impl.Error
 
   @endpoint "https://rest.messagebird.com/contacts/"
@@ -146,29 +147,31 @@ defmodule TextClient.Impl.Contact do
   defp format_delete_response(response), do: format_response(response, :delete)
 
   ########################################
+  #   RESPONSE FORMATTERS
+  ########################################
 
-  defp format_response({:ok, %{ status: 200, body: %{ count: 0 } }}, :get), do: {:ok, nil}
-  defp format_response({:ok, %{ status: 200, body: %{ count: 1, items: [contact] } }}, :get) do
+  defp format_response({:ok, %Response{ status: 200, body: %{ count: 0 } }}, :get), do: {:ok, nil}
+  defp format_response({:ok, %Response{ status: 200, body: %{ count: 1, items: [contact] } }}, :get) do
     {:ok, struct(__MODULE__, contact)}
   end
-  defp format_response({:ok, %{ status: 200, body: %{ count: _, items: contacts } }}, :get) do
+  defp format_response({:ok, %Response{ status: 200, body: %{ count: _, items: contacts } }}, :get) do
     {:ok, (for contact <- contacts, do: struct(__MODULE__, contact)) }
   end
-  defp format_response({:ok, %{ status: 200, body: %{ msisdn: _phone } = contact }}, :get) do
+  defp format_response({:ok, %Response{ status: 200, body: %{ msisdn: _phone } = contact }}, :get) do
     {:ok, struct(__MODULE__, contact)}
   end
 
-  defp format_response({:ok, %{ status: 201, body: body }}, :create) do
+  defp format_response({:ok, %Response{ status: 201, body: body }}, :create) do
     {:ok, struct(__MODULE__, body)}
   end
 
-  defp format_response({:ok, %{ status: 200, body: contact }}, :update) do
+  defp format_response({:ok, %Response{ status: 200, body: contact }}, :update) do
     {:ok, struct(__MODULE__, contact)}
   end
 
-  defp format_response({:ok, %{ status: 204, body: _ }}, :delete), do: {:ok, nil}
+  defp format_response({:ok, %Response{ status: 204, body: _ }}, :delete), do: {:ok, nil}
 
-  defp format_response({:ok, %{ status: unexpected_status_code, body: body }}, _method) do
+  defp format_response({:ok, %Response{ status: unexpected_status_code, body: body }}, _method) do
     {:error, Error.new(unexpected_status_code, body) }
   end
   defp format_response({:error, %Error{}} = error, _method), do: {:error, error}
