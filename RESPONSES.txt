@@ -1,0 +1,185 @@
+DELETE https://rest.messagebird.com/contacts/
+204
+""
+
+PATCH https://rest.messagebird.com/contacts/
+"Invalid MSISDN" -> SAME GOES FOR POST
+422
+{
+  "errors": [
+    {
+      "code": 10,
+      "description": "msisdn is invalid",
+      "parameter": "msisdn"
+    }
+  ]
+}
+
+PATCH https://rest.messagebird.com/contacts/
+200
+{
+  "id": "12d899254f2642a09b96fa164ece03f2",
+  "href": "https://rest.messagebird.com/contacts/12d899254f2642a09b96fa164ece03f2",
+  "msisdn": 16468753694,
+  "firstName": "Vladimir",
+  "lastName": "Kozak",
+  "customDetails": {
+    "custom1": "nikokozak@gmail.com",
+    "custom2": null,
+    "custom3": null,
+    "custom4": null
+  },
+  "groups": {
+    "totalCount": 0,
+    "href": "https://rest.messagebird.com/contacts/12d899254f2642a09b96fa164ece03f2/groups"
+  },
+  "messages": {
+    "totalCount": 0,
+    "href": "https://rest.messagebird.com/contacts/12d899254f2642a09b96fa164ece03f2/messages"
+  },
+  "createdDatetime": "2022-07-22T21:35:59+00:00",
+  "updatedDatetime": "2022-07-22T21:37:55+00:00"
+}
+
+POST https://rest.messagebird.com/contacts/
+201
+
+{
+  "id": "12d899254f2642a09b96fa164ece03f2",
+  "href": "https://rest.messagebird.com/contacts/12d899254f2642a09b96fa164ece03f2",
+  "msisdn": 16468753694,
+  "firstName": "Nikolai",
+  "lastName": "Kozak",
+  "customDetails": {
+    "custom1": "nikokozak@gmail.com",
+    "custom2": null,
+    "custom3": null,
+    "custom4": null
+  },
+  "groups": {
+    "totalCount": 0,
+    "href": "https://rest.messagebird.com/contacts/12d899254f2642a09b96fa164ece03f2/groups"
+  },
+  "messages": {
+    "totalCount": 0,
+    "href": "https://rest.messagebird.com/contacts/12d899254f2642a09b96fa164ece03f2/messages"
+  },
+  "createdDatetime": "2022-07-22T21:35:59+00:00",
+  "updatedDatetime": "2022-07-22T21:35:59+00:00"
+}
+
+POST https://rest.messagebird.com/contacts/
+"MSISDN is requried"
+422
+{
+  "errors": [
+    {
+      "code": 9,
+      "description": "msisdn is required",
+      "parameter": "msisdn"
+    }
+  ]
+}
+
+POST https://rest.messagebird.com/contacts/
+"Already Exists"
+422
+{
+  "errors": [
+    {
+      "code": 10,
+      "description": "contact with this msisdn already exists in your contact list",
+      "parameter": "msisdn"
+    }
+  ]
+}
+
+GET https://rest.messagebird.com/contacts/
+"Nothing Found"
+200
+{
+  "offset": 0,
+  "limit": 20,
+  "count": 0,
+  "totalCount": 0,
+  "links": {
+    "first": null,
+    "previous": null,
+    "next": null,
+    "last": null
+  },
+  "items": [
+
+  ]
+}
+
+GET https://rest.messagebird.com/contacts/?msisdn=16468753694
+** NOTE, NO PLUS ON NUMBER **
+"Found"
+200
+{
+  "offset": 0,
+  "limit": 20,
+  "count": 1,
+  "totalCount": 1,
+  "links": {
+    "first": "https://rest.messagebird.com/contacts?offset=0&msisdn=16468345894",
+    "previous": null,
+    "next": null,
+    "last": "https://rest.messagebird.com/contacts?offset=0&msisdn=16468345894"
+  },
+  "items": [
+    {
+      "id": "a904a3607baa42f5ae616e75bfcb5159",
+      "href": "https://rest.messagebird.com/contacts/a904a3607baa42f5ae616e75bfcb5159",
+      "msisdn": 16468345894,
+      "firstName": null,
+      "lastName": null,
+      "customDetails": {
+        "custom1": null,
+        "custom2": null,
+        "custom3": null,
+        "custom4": null
+      },
+      "groups": {
+        "totalCount": 0,
+        "href": "https://rest.messagebird.com/contacts/a904a3607baa42f5ae616e75bfcb5159/groups"
+      },
+      "messages": {
+        "totalCount": 0,
+        "href": "https://rest.messagebird.com/contacts/a904a3607baa42f5ae616e75bfcb5159/messages"
+      },
+      "createdDatetime": "2022-07-21T21:28:06+00:00",
+      "updtedDatetime": null
+    }
+  ]
+}
+
+
+GET https://rest.messagebird.com/contacts/a904a3607baa42f5ae616e75bfcb5159
+** NOTE, ID RETURNS ONE ENTITY **
+"Found"
+200
+{
+  "id": "a904a3607baa42f5ae616e75bfcb5159",
+  "href": "https://rest.messagebird.com/contacts/a904a3607baa42f5ae616e75bfcb5159",
+  "msisdn": 16468345894,
+  "firstName": null,
+  "lastName": null,
+  "customDetails": {
+    "custom1": null,
+    "custom2": null,
+    "custom3": null,
+    "custom4": null
+  },
+  "groups": {
+    "totalCount": 0,
+    "href": "https://rest.messagebird.com/contacts/a904a3607baa42f5ae616e75bfcb5159/groups"
+  },
+  "messages": {
+    "totalCount": 0,
+    "href": "https://rest.messagebird.com/contacts/a904a3607baa42f5ae616e75bfcb5159/messages"
+  },
+  "createdDatetime": "2022-07-21T21:28:06+00:00",
+  "updatedDatetime": null
+}
