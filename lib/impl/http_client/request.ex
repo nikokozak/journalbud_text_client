@@ -26,10 +26,11 @@ defmodule TextClient.Impl.HTTPClient.Request do
 
   @spec put_auth_header(t) :: t
   def put_auth_header(request) do
-    api_key = Application.fetch_env!(:text_client, :messagebird_api_key) 
+    provider = Application.fetch_env!(:text_client, :provider)
+    api_key = Application.fetch_env!(:text_client, provider) |> Keyword.fetch!(:auth_header)
 
     request
-    |> put_header(Authorization: "AccessKey " <> api_key)
+    |> put_header(Authorization: api_key)
   end
 
   @spec put_accepts_header(t) :: t
@@ -44,10 +45,16 @@ defmodule TextClient.Impl.HTTPClient.Request do
   @spec put_method(t, method) :: t
   def put_method(request, method), do: request |> Map.put(:method, method)
 
-  @spec put_body(t, map) :: t
-  def put_body(request, nil), do: request
-  def put_body(request, %{} = empty_map) when empty_map == %{}, do: request
-  def put_body(request, body) when is_map(body) do
+  @spec put_body(t, map, Keyword.t | false) :: t
+  def put_body(request, body), do: put_body(request, body, false)
+  def put_body(request, nil, _), do: request
+  def put_body(request, %{} = empty_map, _) when empty_map == %{}, do: request
+  def put_body(request, body, uri_encoded: true) do
+    body
+    |> URI.encode_query()
+    |> (&Map.put(request, :body, &1)).()
+  end
+  def put_body(request, body, _) when is_map(body) do
     body
     |> Poison.encode!(body)
     |> (&Map.put(request, :body, &1)).()

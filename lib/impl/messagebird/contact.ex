@@ -1,4 +1,4 @@
-defmodule TextClient.Impl.Contact do
+defmodule TextClient.Impl.MessageBird.Contact do
   import TextClient.Impl.HTTPClient.Request
   alias TextClient.Impl.HTTPClient.Response
   alias TextClient.Impl.Error

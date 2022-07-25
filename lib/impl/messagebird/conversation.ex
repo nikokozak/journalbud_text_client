@@ -1,4 +1,4 @@
-defmodule TextClient.Impl.Conversation do
+defmodule TextClient.Impl.MessageBird.Conversation do
   alias TextClient.Impl.Error
   import TextClient.Impl.HTTPClient.Request
 
@@ -77,7 +77,6 @@ defmodule TextClient.Impl.Conversation do
     |> put_method(:post)
     |> put_endpoint(@endpoint <> "start")
     |> put_body(Map.put(params, :channelId, sms_channel()))
-    |> IO.inspect()
     |> make_request
     |> format_create_response
   end
