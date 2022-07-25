@@ -1,4 +1,5 @@
 defmodule TextClient.Impl.Conversation do
+  alias TextClient.Impl.Error
   import TextClient.Impl.HTTPClient.Request
 
   @endpoint "https://conversations.messagebird.com/v1/conversations/"
@@ -61,7 +62,7 @@ defmodule TextClient.Impl.Conversation do
 
   ########################################
 
-  @spec create(params) :: {:ok, t} | {:error, TextClient.Error.t}
+  @spec create(params) :: {:ok, t} | {:error, Error.t}
   when params:
   %{
     type: type,
@@ -77,11 +78,14 @@ defmodule TextClient.Impl.Conversation do
     |> put_endpoint(@endpoint <> "start")
     |> put_body(params)
     |> make_request
+    |> format_create_response
   end
+
+  defp format_create_response(response), do: format_response(response, :create)
 
   ########################################
 
-  @spec all(opts) :: {:ok, list(t) | list()} | {:error, TextClient.Error.t}
+  @spec all(opts) :: {:ok, list(t) | list()} | {:error, Error.t}
   when opts: [
     limit: integer,
     offset: integer,
@@ -93,14 +97,15 @@ defmodule TextClient.Impl.Conversation do
     |> put_endpoint(@endpoint)
     |> put_get_params(opts)
     |> make_request
+    |> format_get_response
   end
 
   ########################################
 
-  @spec get(String.t) :: {:ok, t | nil} | {:error, TextClient.Error.t}
+  @spec get(String.t) :: {:ok, t | nil} | {:error, Error.t}
   def get(conversation_id), do: get([id: conversation_id])
 
-  @spec get(params) :: {:ok, t | nil} | {:error, TextClient.Error.t}
+  @spec get(params) :: {:ok, t | nil} | {:error, Error.t}
   when params: [
     contact_id: String.t,
     id: String.t,
@@ -114,6 +119,7 @@ defmodule TextClient.Impl.Conversation do
     |> put_endpoint(@endpoint <> conversation_id)
     |> put_get_params(opts)
     |> make_request
+    |> format_get_response
   end
   def get([contact_id: contact_id] = opts) do
     new_request()
@@ -121,7 +127,10 @@ defmodule TextClient.Impl.Conversation do
     |> put_endpoint(@endpoint <> "/contact/#{contact_id}")
     |> put_get_params(opts)
     |> make_request
+    |> format_get_response
   end
+
+  defp format_get_response(response), do: format_response(response, :get)
 
   defp put_get_params(request, params, exclude \\ [:id, :contact_id]) do
     formatted_params = filter_params(params, exclude)
@@ -141,22 +150,55 @@ defmodule TextClient.Impl.Conversation do
 
   ########################################
 
-  @spec update(String.t, status) :: {:ok, t} | {:error, TextClient.Error.t}
+  @spec update(String.t, status) :: {:ok, t} | {:error, Error.t}
   def update(conversation_id, conversation_status) do
     new_request()
     |> put_method(:patch)
     |> put_endpoint(@endpoint <> conversation_id)
     |> put_body(%{ status: conversation_status })
     |> make_request
+    |> format_update_response
   end
+
+  defp format_update_response(response), do: format_response(response, :update)
 
   ########################################
 
-  @spec delete(String.t) :: {:ok, nil} | {:error, TextClient.Error.t}
+  @spec delete(String.t) :: {:ok, nil} | {:error, Error.t}
   def delete(conversation_id) do
     new_request()
     |> put_method(:delete)
     |> put_endpoint(@endpoint <> conversation_id)
     |> make_request
+    |> format_delete_response
   end
+
+  defp format_delete_response(response), do: format_response(response, :delete)
+
+  defp format_response({:ok, %{ status: 200, body: %{ count: 0 } }}, :get), do: {:ok, nil}
+  defp format_response({:ok, %{ status: 200, body: %{ count: 1, items: [convo] } }}, :get) do
+    {:ok, struct(__MODULE__, convo)}
+  end
+  defp format_response({:ok, %{ status: 200, body: %{ count: _, items: convos } }}, :get) do
+    {:ok, (for convo <- convos, do: struct(__MODULE__, convo)) }
+  end
+  defp format_response({:ok, %{ status: 200, body: %{ id: _convo_id } = convo }}, :get) do
+    {:ok, struct(__MODULE__, convo)}
+  end
+
+  defp format_response({:ok, %{ status: 201, body: body }}, :create) do
+    {:ok, struct(__MODULE__, body)}
+  end
+
+  defp format_response({:ok, %{ status: 200, body: convo }}, :update) do
+    {:ok, struct(__MODULE__, convo)}
+  end
+
+  defp format_response({:ok, %{ status: 204, body: _ }}, :delete), do: {:ok, nil}
+
+  defp format_response({:ok, %{ status: unexpected_status_code, body: body }}, _method) do
+    {:error, Error.new(unexpected_status_code, body) }
+  end
+  defp format_response({:error, %Error{}} = error, _method), do: {:error, error}
+
 end

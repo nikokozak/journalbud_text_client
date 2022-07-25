@@ -1,4 +1,4 @@
-defmodule ContactTests do
+defmodule ContactTest do
     use ExUnit.Case
     alias TextClient.Impl.Contact
 
