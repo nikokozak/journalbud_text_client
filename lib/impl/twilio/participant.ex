@@ -60,8 +60,8 @@ defmodule TextClient.Impl.Twilio.Participant do
     |> format_create_response
   end
 
-  defp put_default_number(%{ "MessageBinding.ProxyAddress": _ } = params), do: params
-  defp put_default_number(params), do: Map.put(params, "MessageBinding.ProxyAddress", twilio_sms_number())
+  defp put_default_number(%{ "MessagingBinding.ProxyAddress": _ } = params), do: params
+  defp put_default_number(params), do: Map.put(params, "MessagingBinding.ProxyAddress", twilio_sms_number())
 
   defp twilio_sms_number(), do: Keyword.fetch!(Application.fetch_env!(:text_client, :twilio), :sms_number)
 
