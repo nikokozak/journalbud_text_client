@@ -47,14 +47,21 @@ defmodule TextClient.Impl.HTTPClient.Request do
 
   @spec put_body(t, map) :: t
   def put_body(request, %{} = empty_map) when empty_map == %{}, do: request
-  def put_body(%{headers: ["Content-Type": "application/x-www-form-urlencoded"]} = request, body) when is_map(body) do
+  def put_body(request, body) when is_map(body) do
     body
-    |> encode_nested_maps_as_json()
+    |> maybe_encode_nested_as_json(request)
+    #|> encode_nested_maps_as_json()
     |> URI.encode_query()
     |> (&Map.put(request, :body, &1)).()
   end
-  def put_body(request, body) when is_map(body), do: request |> Map.put(:body, Poison.encode!(body))
+#  def put_body(request, body) when is_map(body), do: request |> Map.put(:body, Poison.encode!(body))
   def put_body(request, body) when is_binary(body), do: request |> Map.put(:body, body)
+
+  defp is_urlencoded?(request), do: {:"Content-Type", "application/x-www-form-urlencoded"} in request.headers |> IO.inspect
+
+  defp maybe_encode_nested_as_json(body, request) do
+    if is_urlencoded?(request), do: encode_nested_maps_as_json(body), else: body
+  end
 
   defp encode_nested_maps_as_json(map) do
     map

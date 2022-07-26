@@ -57,16 +57,14 @@ defmodule TextClient.Impl.Twilio.Participant do
     |> put_body(format_create_params(params))
     |> IO.inspect
     |> make_request
-    |> IO.inspect
     |> format_create_response
   end
 
   defp format_create_params(raw_params) do
-    %{
-      "MessagingBinding.Address" => raw_params[:Address],
-      "MessagingBinding.ProxyAddress" => raw_params[:ProxyAddress] || twilio_sms_number(),
-      "Attributes" => raw_params[:Attributes]
-    }
+    %{}
+    |> maybe_put("MessagingBinding.Address", raw_params[:Address])
+    |> maybe_put("MessagingBinding.ProxyAddress", raw_params[:ProxyAddress] || twilio_sms_number())
+    |> maybe_put("Attributes", raw_params[:Attributes])
   end
 
   defp twilio_sms_number(), do: Keyword.fetch!(Application.fetch_env!(:text_client, :twilio), :sms_number)
@@ -114,9 +112,16 @@ defmodule TextClient.Impl.Twilio.Participant do
     |> put_method(:post)
     |> put_endpoint(participants_endpoint(conversation_sid, participant_sid))
     |> put_header(url_encoded_content_type_header())
-    |> put_body(format_create_params(params))
+    |> put_body(format_update_params(params))
     |> make_request()
     |> format_update_response
+  end
+
+  defp format_update_params(raw_params) do
+    %{}
+    |> maybe_put("MessagingBinding.Address", raw_params[:Address])
+    |> maybe_put("MessagingBinding.ProxyAddress", raw_params[:ProxyAddress])
+    |> maybe_put("Attributes", raw_params[:Attributes])
   end
 
   defp format_update_response(response), do: format_response(response, :update)
@@ -136,17 +141,17 @@ defmodule TextClient.Impl.Twilio.Participant do
 
   ########################################
 
-  defp format_response({:ok, %Response{status: 201, body: %{ sid: _ } = convo}}, :create) do
-    {:ok, struct(__MODULE__, convo)}
+  defp format_response({:ok, %Response{status: 201, body: %{ sid: _ } = participant}}, :create) do
+    {:ok, struct(__MODULE__, participant)}
   end
-  defp format_response({:ok, %Response{status: 200, body: %{ sid: _ } = convo}}, :get) do
-    {:ok, struct(__MODULE__, convo)}
+  defp format_response({:ok, %Response{status: 200, body: %{ sid: _ } = participant}}, :get) do
+    {:ok, struct(__MODULE__, participant)}
   end
-  defp format_response({:ok, %Response{status: 200, body: %{ conversations: convos }}}, :all) do
-    {:ok, (for convo <- convos, do: struct(__MODULE__, convo)) }
+  defp format_response({:ok, %Response{status: 200, body: %{ participants: participants }}}, :all) do
+    {:ok, (for participant <- participants, do: struct(__MODULE__, participant)) }
   end
-  defp format_response({:ok, %Response{status: 200, body: %{ sid: _ } = convo}}, :update) do
-    {:ok, struct(__MODULE__, convo)}
+  defp format_response({:ok, %Response{status: 200, body: %{ sid: _ } = participant}}, :update) do
+    {:ok, struct(__MODULE__, participant)}
   end
   defp format_response({:ok, %Response{status: 204, body: _}}, :delete), do: {:ok, nil}
 
@@ -162,4 +167,8 @@ defmodule TextClient.Impl.Twilio.Participant do
   end
 
   defp url_encoded_content_type_header, do: ["Content-Type": "application/x-www-form-urlencoded"]
+
+  defp maybe_put(map, key, nil), do: map
+  defp maybe_put(map, key, value), do: Map.put(map, key, value)
+
 end
