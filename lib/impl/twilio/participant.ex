@@ -45,8 +45,8 @@ defmodule TextClient.Impl.Twilio.Participant do
   when params:
   %{
     optional(:Identity) => String.t,
-    optional(:Address) => String.t, # MUST BE IN INTL FORMAT
-    optional(:ProxyAddress) => String.t,
+    optional(:"MessageBinding.Address") => String.t, # MUST BE IN INTL FORMAT
+    optional(:"MessageBinding.ProxyAddress") => String.t,
     optional(:Attributes) => map
   }
   def create(conversation_sid, params) do
@@ -54,18 +54,14 @@ defmodule TextClient.Impl.Twilio.Participant do
     |> put_method(:post)
     |> put_endpoint(participants_endpoint(conversation_sid))
     |> put_header(url_encoded_content_type_header())
-    |> put_body(format_create_params(params))
+    |> put_body(put_default_number(params))
     |> IO.inspect
     |> make_request
     |> format_create_response
   end
 
-  defp format_create_params(raw_params) do
-    %{}
-    |> maybe_put("MessagingBinding.Address", raw_params[:Address])
-    |> maybe_put("MessagingBinding.ProxyAddress", raw_params[:ProxyAddress] || twilio_sms_number())
-    |> maybe_put("Attributes", raw_params[:Attributes])
-  end
+  defp put_default_number(%{ "MessageBinding.ProxyAddress": _ } = params), do: params
+  defp put_default_number(params), do: Map.put(params, "MessageBinding.ProxyAddress", twilio_sms_number())
 
   defp twilio_sms_number(), do: Keyword.fetch!(Application.fetch_env!(:text_client, :twilio), :sms_number)
 
@@ -112,16 +108,9 @@ defmodule TextClient.Impl.Twilio.Participant do
     |> put_method(:post)
     |> put_endpoint(participants_endpoint(conversation_sid, participant_sid))
     |> put_header(url_encoded_content_type_header())
-    |> put_body(format_update_params(params))
+    |> put_body(params)
     |> make_request()
     |> format_update_response
-  end
-
-  defp format_update_params(raw_params) do
-    %{}
-    |> maybe_put("MessagingBinding.Address", raw_params[:Address])
-    |> maybe_put("MessagingBinding.ProxyAddress", raw_params[:ProxyAddress])
-    |> maybe_put("Attributes", raw_params[:Attributes])
   end
 
   defp format_update_response(response), do: format_response(response, :update)
@@ -167,8 +156,5 @@ defmodule TextClient.Impl.Twilio.Participant do
   end
 
   defp url_encoded_content_type_header, do: ["Content-Type": "application/x-www-form-urlencoded"]
-
-  defp maybe_put(map, key, nil), do: map
-  defp maybe_put(map, key, value), do: Map.put(map, key, value)
 
 end

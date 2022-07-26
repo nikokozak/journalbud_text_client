@@ -43,6 +43,7 @@ defmodule TextClient.Types do
       200 => {"We found the resource", :http_found},
       201 => {"The resource is succesfully created", :http_created},
       204 => {"The requested resource is empty", :http_empty},
+      400 => {"Bad request", :http_bad_request},
       401 => {"Access key was incorrect", :http_access_key_incorrect},
       404 => {"The resources cannot be found", :http_not_found},
       405 => {"The method is not allowed", :http_method_not_allowed},
