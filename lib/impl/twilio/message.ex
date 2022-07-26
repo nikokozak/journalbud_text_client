@@ -60,9 +60,9 @@ defmodule TextClient.Impl.Twilio.Message do
   def create(conversation_sid, params) do
     new_request()
     |> put_method(:post)
-    |> put_endpoint(@endpoint <> conversation_sid <> "/Messages")
-    |> put_header("Content-Type": "application/x-www-form-urlencoded")
-    |> put_body(params, uri_encoded: true)
+    |> put_endpoint(messages_endpoint(conversation_sid))
+    |> put_header(url_encoded_content_type_header())
+    |> put_body(params)
     |> make_request
     |> format_create_response
   end
@@ -75,7 +75,7 @@ defmodule TextClient.Impl.Twilio.Message do
   def get(conversation_sid, message_sid) do
     new_request()
     |> put_method(:get)
-    |> put_endpoint(@endpoint <> conversation_sid <> "/Messages/" <> message_sid)
+    |> put_endpoint(messages_endpoint(conversation_sid, message_sid))
     |> make_request()
     |> format_get_response
   end
@@ -88,7 +88,7 @@ defmodule TextClient.Impl.Twilio.Message do
   def all(conversation_sid) do
     new_request()
     |> put_method(:get)
-    |> put_endpoint(@endpoint <> conversation_sid <> "/Messages")
+    |> put_endpoint(messages_endpoint(conversation_sid))
     |> make_request()
     |> format_all_response
   end
@@ -107,9 +107,9 @@ defmodule TextClient.Impl.Twilio.Message do
   def update(conversation_sid, message_sid, params) do
     new_request()
     |> put_method(:post)
-    |> put_endpoint(@endpoint <> conversation_sid <> "/Messages/" <> message_sid)
-    |> put_header("Content-Type": "application/x-www-form-urlencoded")
-    |> put_body(params, uri_encoded: true)
+    |> put_endpoint(messages_endpoint(conversation_sid, message_sid))
+    |> put_header(url_encoded_content_type_header())
+    |> put_body(params)
     |> make_request()
     |> format_update_response
   end
@@ -122,7 +122,7 @@ defmodule TextClient.Impl.Twilio.Message do
   def delete(conversation_sid, message_sid) do
     new_request()
     |> put_method(:delete)
-    |> put_endpoint(@endpoint <> conversation_sid <> "/Messages/" <> message_sid)
+    |> put_endpoint(messages_endpoint(conversation_sid, message_sid))
     |> make_request()
     |> format_delete_response
   end
@@ -150,5 +150,12 @@ defmodule TextClient.Impl.Twilio.Message do
   end
 
   defp format_response({:error, %Error{}} = error, _method), do: error
+
+  defp messages_endpoint(conversation_sid), do: @endpoint <> conversation_sid <> "/Messages/"
+  defp messages_endpoint(conversation_sid, message_sid) do
+    @endpoint <> conversation_sid <> "/Messages/" <> message_sid
+  end
+
+  defp url_encoded_content_type_header, do: ["Content-Type": "application/x-www-form-urlencoded"]
 
 end

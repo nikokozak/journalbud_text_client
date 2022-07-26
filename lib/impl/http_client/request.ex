@@ -45,19 +45,25 @@ defmodule TextClient.Impl.HTTPClient.Request do
   @spec put_method(t, method) :: t
   def put_method(request, method), do: request |> Map.put(:method, method)
 
-  @spec put_body(t, map, Keyword.t | false) :: t
-  def put_body(request, body), do: put_body(request, body, false)
-  def put_body(request, nil, _), do: request
-  def put_body(request, %{} = empty_map, _) when empty_map == %{}, do: request
-  def put_body(request, body, uri_encoded: true) do
+  @spec put_body(t, map) :: t
+  def put_body(request, %{} = empty_map) when empty_map == %{}, do: request
+  def put_body(%{headers: ["Content-Type": "application/x-www-form-urlencoded"]} = request, body) when is_map(body) do
     body
+    |> encode_nested_maps_as_json()
     |> URI.encode_query()
     |> (&Map.put(request, :body, &1)).()
   end
-  def put_body(request, body, _) when is_map(body) do
-    body
-    |> Poison.encode!(body)
-    |> (&Map.put(request, :body, &1)).()
+  def put_body(request, body) when is_map(body), do: request |> Map.put(:body, Poison.encode!(body))
+  def put_body(request, body) when is_binary(body), do: request |> Map.put(:body, body)
+
+  defp encode_nested_maps_as_json(map) do
+    map
+    |> Enum.reduce(map, fn {key, value}, result ->
+      case is_map(value) do
+        true -> Map.put(result, key, Poison.encode!(value))
+        false -> result
+      end
+    end)
   end
 
   @spec put_params(t, map) :: t

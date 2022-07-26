@@ -59,9 +59,9 @@ defmodule TextClient.Impl.Twilio.Conversation do
   def create(params) do
     new_request()
     |> put_method(:post)
-    |> put_endpoint(@endpoint)
-    |> put_header("Content-Type": "application/x-www-form-urlencoded")
-    |> put_body(params, uri_encoded: true)
+    |> put_endpoint(conversation_endpoint())
+    |> put_header(url_encoded_content_type_header())
+    |> put_body(params)
     |> make_request
     |> format_create_response
   end
@@ -74,7 +74,7 @@ defmodule TextClient.Impl.Twilio.Conversation do
   def get(sid) do
     new_request()
     |> put_method(:get)
-    |> put_endpoint(@endpoint <> sid)
+    |> put_endpoint(conversation_endpoint(sid))
     |> make_request()
     |> format_get_response
   end
@@ -89,7 +89,7 @@ defmodule TextClient.Impl.Twilio.Conversation do
   def all(opts \\ %{}) do
     new_request()
     |> put_method(:get)
-    |> put_endpoint(@endpoint)
+    |> put_endpoint(conversation_endpoint())
     |> put_params(opts)
     |> make_request()
     |> format_all_response
@@ -108,9 +108,9 @@ defmodule TextClient.Impl.Twilio.Conversation do
   def update(sid, params) do
     new_request()
     |> put_method(:post)
-    |> put_endpoint(@endpoint <> sid)
-    |> put_header("Content-Type": "application/x-www-form-urlencoded")
-    |> put_body(params, uri_encoded: true)
+    |> put_endpoint(conversation_endpoint(sid))
+    |> put_header(url_encoded_content_type_header())
+    |> put_body(params)
     |> make_request()
     |> format_update_response
   end
@@ -123,7 +123,7 @@ defmodule TextClient.Impl.Twilio.Conversation do
   def delete(sid) do
     new_request()
     |> put_method(:delete)
-    |> put_endpoint(@endpoint <> sid)
+    |> put_endpoint(conversation_endpoint(sid))
     |> make_request()
     |> format_delete_response
   end
@@ -152,4 +152,8 @@ defmodule TextClient.Impl.Twilio.Conversation do
 
   defp format_response({:error, %Error{}} = error, _method), do: error
 
+  defp conversation_endpoint(), do: @endpoint
+  defp conversation_endpoint(conversation_sid), do: @endpoint <> conversation_sid
+
+  defp url_encoded_content_type_header, do: ["Content-Type": "application/x-www-form-urlencoded"]
 end

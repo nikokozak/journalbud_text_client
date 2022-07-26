@@ -52,9 +52,9 @@ defmodule TextClient.Impl.Twilio.Participant do
   def create(conversation_sid, params) do
     new_request()
     |> put_method(:post)
-    |> put_endpoint(@endpoint <> conversation_sid <> "/Participants")
-    |> put_header("Content-Type": "application/x-www-form-urlencoded")
-    |> put_body(format_create_params(params), uri_encoded: true)
+    |> put_endpoint(participants_endpoint(conversation_sid))
+    |> put_header(url_encoded_content_type_header())
+    |> put_body(format_create_params(params))
     |> IO.inspect
     |> make_request
     |> IO.inspect
@@ -79,7 +79,7 @@ defmodule TextClient.Impl.Twilio.Participant do
   def get(conversation_sid, participant_sid) do
     new_request()
     |> put_method(:get)
-    |> put_endpoint(@endpoint <> conversation_sid <> "/Participants/" <> participant_sid)
+    |> put_endpoint(participants_endpoint(conversation_sid, participant_sid))
     |> make_request()
     |> format_get_response
   end
@@ -92,7 +92,7 @@ defmodule TextClient.Impl.Twilio.Participant do
   def all(conversation_sid) do
     new_request()
     |> put_method(:get)
-    |> put_endpoint(@endpoint <> conversation_sid <> "/Participants")
+    |> put_endpoint(participants_endpoint(conversation_sid))
     |> make_request()
     |> format_all_response
   end
@@ -112,9 +112,9 @@ defmodule TextClient.Impl.Twilio.Participant do
   def update(conversation_sid, participant_sid, params) do
     new_request()
     |> put_method(:post)
-    |> put_endpoint(@endpoint <> conversation_sid <> "/Participants/" <> participant_sid)
-    |> put_header("Content-Type": "application/x-www-form-urlencoded")
-    |> put_body(format_create_params(params), uri_encoded: true)
+    |> put_endpoint(participants_endpoint(conversation_sid, participant_sid))
+    |> put_header(url_encoded_content_type_header())
+    |> put_body(format_create_params(params))
     |> make_request()
     |> format_update_response
   end
@@ -127,7 +127,7 @@ defmodule TextClient.Impl.Twilio.Participant do
   def delete(conversation_sid, participant_sid) do
     new_request()
     |> put_method(:delete)
-    |> put_endpoint(@endpoint <> conversation_sid <> "/Participants/" <> participant_sid)
+    |> put_endpoint(participants_endpoint(conversation_sid, participant_sid))
     |> make_request()
     |> format_delete_response
   end
@@ -156,4 +156,10 @@ defmodule TextClient.Impl.Twilio.Participant do
 
   defp format_response({:error, %Error{}} = error, _method), do: error
 
+  defp participants_endpoint(conversation_sid), do: @endpoint <> conversation_sid <> "/Participants/"
+  defp participants_endpoint(conversation_sid, participant_sid) do
+    @endpoint <> conversation_sid <> "/Participants/" <> participant_sid
+  end
+
+  defp url_encoded_content_type_header, do: ["Content-Type": "application/x-www-form-urlencoded"]
 end
